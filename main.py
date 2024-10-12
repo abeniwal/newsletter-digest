@@ -4,14 +4,11 @@ import base64
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-from dotenv import load_dotenv # type: ignore
 from google.oauth2.credentials import Credentials # type: ignore
 from googleapiclient.discovery import build # type: ignore
 from google.auth.transport.requests import Request # type: ignore
 from google_auth_oauthlib.flow import InstalledAppFlow # type: ignore
 from openai import OpenAI # type: ignore
-
-load_dotenv()
 
 SCOPES = [
     'https://www.googleapis.com/auth/gmail.readonly',
@@ -21,16 +18,32 @@ SCOPES = [
 
 def get_credentials():
     creds = None
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    if os.getenv('GOOGLE_REFRESH_TOKEN'):
+        creds = Credentials.from_authorized_user_info({
+            'refresh_token': os.getenv('GOOGLE_REFRESH_TOKEN'),
+            'client_id': os.getenv('GOOGLE_CLIENT_ID'),
+            'client_secret': os.getenv('GOOGLE_CLIENT_SECRET')
+        }, SCOPES)
+    
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+            flow = InstalledAppFlow.from_client_config(
+                {
+                    "installed": {
+                        "client_id": os.getenv('GOOGLE_CLIENT_ID'),
+                        "client_secret": os.getenv('GOOGLE_CLIENT_SECRET'),
+                        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                        "token_uri": "https://oauth2.googleapis.com/token",
+                    }
+                },
+                SCOPES
+            )
             creds = flow.run_local_server(port=0)
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
+            print(f'Refresh token: {creds.refresh_token}')
+            print('Please save this refresh token as an environment variable named GOOGLE_REFRESH_TOKEN')
+    
     return creds
 
 def get_recent_emails(service):
