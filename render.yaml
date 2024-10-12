@@ -1,0 +1,20 @@
+services:
+  - type: cron
+    name: newsletter-digest
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    schedule: "0 13 * * *"
+    envVars:
+      - key: GOOGLE_REFRESH_TOKEN
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: NEWSLETTER_GMAIL_LABEL
+        sync: false
+      - key: NEWSLETTER_DIGEST_OPENAI_API_KEY
+        sync: false
+      - key: SENDER_EMAIL
+        sync: false
