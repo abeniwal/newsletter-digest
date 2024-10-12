@@ -1,11 +1,12 @@
 import os
 import datetime
+import base64
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
 from dotenv import load_dotenv # type: ignore
 from google.oauth2.credentials import Credentials # type: ignore
 from googleapiclient.discovery import build # type: ignore
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-import base64
 from google.auth.transport.requests import Request # type: ignore
 from google_auth_oauthlib.flow import InstalledAppFlow # type: ignore
 from openai import OpenAI # type: ignore
@@ -34,7 +35,7 @@ def get_credentials():
 
 def get_recent_emails(service):
     yesterday = datetime.date.today() - datetime.timedelta(days=1)
-    query = f'label:ai-and-tech-newsletters after:{yesterday.strftime("%Y/%m/%d")}'
+    query = f'label:{os.getenv('NEWSLETTER_GMAIL_LABEL')} after:{yesterday.strftime("%Y/%m/%d")}'
     results = service.users().messages().list(userId='me', q=query).execute()
     messages = results.get('messages', [])
     return messages
@@ -112,7 +113,7 @@ def main():
 
     summary = summarize_content(all_content)
 
-    send_email(service, os.getenv('SENDER_EMAIL'), os.getenv('NEWSLETTER_GMAIL_LABEL'), summary)
+    send_email(service, os.getenv('SENDER_EMAIL'), "Tech and AI News Digest", summary)
 
     # Get the IDs of the messages we processed
     processed_message_ids = [message['id'] for message in messages]
