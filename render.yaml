@@ -4,7 +4,7 @@ services:
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: python main.py
-    schedule: "0 13 * * *"
+    schedule: "* * * * *"
     envVars:
       - key: GOOGLE_REFRESH_TOKEN
         sync: false
