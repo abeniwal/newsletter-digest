@@ -48,7 +48,7 @@ def get_credentials():
 
 def get_recent_emails(service):
     yesterday = datetime.date.today() - datetime.timedelta(days=1)
-    query = f'label:{os.getenv('NEWSLETTER_GMAIL_LABEL')} after:{yesterday.strftime("%Y/%m/%d")}'
+    query = f'label:{os.getenv("NEWSLETTER_GMAIL_LABEL")} after:{yesterday.strftime("%Y/%m/%d")}'
     results = service.users().messages().list(userId='me', q=query).execute()
     messages = results.get('messages', [])
     return messages
